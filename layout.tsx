@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import './college.css';
 export const metadata: Metadata = {
  title:'Plume + Boulier | Les petites aventures',
- description:'Écris, calcule et construis tes aventures. Un cahier cursif et des maths pour grandir en confiance.',
+ description:'Du CP–CE1 au collège : écriture, maths, français, anglais et allemand. Des défis et des aventures pour progresser.',
  icons:{icon:'/favicon.svg',apple:'/favicon.svg'},
  appleWebApp:{capable:true,statusBarStyle:'default',title:'Plume + Boulier'},
 };

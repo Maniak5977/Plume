@@ -16,3 +16,42 @@
 @media(max-width:1150px){.hero-avatar .speech-bubble{display:none}.skin-card{padding:19px}.skin-card.active{padding:18px}.skin-card>.avatar-art{width:173px!important;height:173px!important}.skin-card h2{font-size:21px}.skin-card p{font-size:11px}.skin-card .button{font-size:10px}.home-customize{font-size:10px;padding:10px 12px;right:0}.skin-collection{font-size:7px}.story-workspace.compact-illustration{grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr)}.dino-friends .avatar-art{width:53px!important;height:53px!important}.dino-friends strong{font-size:10px}.dino-friends small{font-size:8px}}
 @media(max-width:900px){.home-customize{font-size:9px;padding:9px 11px}.home-customize>svg:last-child{display:none}.skin-card>.avatar-art{width:150px!important;height:150px!important}.skins-grid{gap:14px}.skin-card{padding:16px}.skin-card.active{padding:15px}.skin-card h2{font-size:19px}.skin-card p{font-size:10px}.skin-card .button{font-size:9px;padding:12px 11px;gap:6px}.skin-card .button svg{width:14px}.story-workspace.math-layout{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px}.math-layout .mission-card-v2{padding:21px}.math-layout .mission-story-prompt{font-size:14px}.math-layout .story-calculation{font-size:29px}.math-layout .adventure-answer.numeric>input{font-size:32px}.story-math-context{height:87px;margin-bottom:20px}.side-scratch>.scratch{min-height:420px}.story-workspace.compact-illustration{grid-template-columns:1fr}.compact-illustration .story-scene-v2{aspect-ratio:16/4;max-height:135px}.compact-illustration .story-scene-wrap{position:relative;top:auto}.dino-friends{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:13px}.dino-friends>.puzzle-label{grid-column:1/-1;margin-bottom:1px}.dino-friends>button{flex-direction:column;text-align:center;padding:9px 7px;margin-top:0;gap:5px}.dino-friends>button>svg{width:13px;height:13px}.dino-friends strong{font-size:9px}.dino-friends small{font-size:8px}.dialogue-card .dino-friends{grid-template-columns:1fr 1fr}.dialogue-card .dino-friends>button{flex-direction:row;text-align:left;gap:7px}.dialogue-card .dino-friends>button>svg{display:none}.dialogue-card .dino-friends strong{font-size:10px}.dialogue-card .dino-friends small{font-size:9px}}
 @media(max-width:680px){.home-hero{min-height:248px;align-items:flex-start}.home-customize{top:auto;bottom:10px;left:3px;right:auto;font-size:10px;padding:11px 13px}.hero-avatar{top:29px}.hero-actions{margin-top:24px}.customization-title{font-size:21px;margin-bottom:17px}.skins-grid{grid-template-columns:1fr;gap:17px}.skin-card{display:grid;grid-template-columns:130px 1fr;gap:8px 15px;text-align:left;align-items:center;padding:19px}.skin-card.active{padding:18px}.skin-collection{grid-column:1/-1;font-size:8px;margin-bottom:7px}.skin-card>.avatar-art{width:136px!important;height:136px!important;grid-column:1;grid-row:2/5}.skin-card h2{grid-column:2;font-size:23px;margin:0}.skin-card p{grid-column:2;font-size:10px;min-height:0;margin:0;line-height:1.75}.skin-card>.button{grid-column:2;margin-top:8px;font-size:10px}.wardrobe-subtitle{font-size:12px}.wardrobe-shop-link{font-size:11px;padding:16px;gap:8px}.story-math-context{height:78px;padding:5px 12px;gap:7px}.story-math-context>.avatar-art{width:64px!important;height:64px!important}.story-math-context strong{font-size:12px}.story-math-context span{font-size:6px}.story-math-context>div:last-child{padding:11px 13px}.story-workspace.math-layout{grid-template-columns:1fr}.math-layout>.mission-card-v2,.math-layout>.side-scratch{grid-column:1}.side-scratch>.scratch{min-height:240px}.side-scratch .scratch canvas{min-height:190px}.compact-illustration .story-scene-v2{aspect-ratio:16/5;max-height:120px}.dino-friends{gap:7px;padding:12px}.dino-friends strong{font-size:9px}.dino-friends small{font-size:7px}.dino-friends .avatar-art{width:48px!important;height:48px!important}.dialogue-card .dino-friends{display:block}.dialogue-card .dino-friends>button{margin-top:9px;padding:11px}.dialogue-card .dino-friends .avatar-art{width:57px!important;height:57px!important}.dialogue-card .dino-friends strong{font-size:11px}.dialogue-card .dino-friends small{font-size:9px}.connection-actions .button{font-size:12px;white-space:normal}}
+/* V5 — handwriting comfort, keyboard scratchpad and visible mobile customization. */
+.avatar-art{position:relative;overflow:visible}
+.avatar-equipment{position:absolute;width:57%;height:57%;right:-4%;bottom:8%;background-size:200% 100%;background-repeat:no-repeat;filter:drop-shadow(0 3px 2px #1c2b3035);pointer-events:none}
+.avatar-equipment.bow{width:67%;height:67%;right:-6%;bottom:4%}
+.mobile-appearance-link{display:none}
+.scratch-modes{display:flex;gap:7px;margin:7px 13px 10px;flex-wrap:wrap}
+.scratch-modes button{display:flex;align-items:center;gap:6px;min-height:40px;padding:8px 11px;border-radius:9px;color:#756b56;background:#f0eadc;font-size:12px;font-weight:700}
+.scratch-modes button.active{background:#dae5e8;color:#35596c;box-shadow:inset 0 0 0 1px #b5cbd1}
+.scratch textarea{display:block;width:100%;flex:1;resize:vertical;min-height:260px;border:0;border-radius:0;outline:none;padding:17px 20px;font:18px/30px ui-monospace,SFMono-Regular,monospace;color:#355573;background:repeating-linear-gradient(to bottom,#fffcf5 0,#fffcf5 29px,#e6dfce 29px,#e6dfce 30px);background-position:0 16px;caret-color:#355573;touch-action:auto}
+.scratch textarea:focus{box-shadow:inset 0 0 0 2px #b8cbd4}
+.scratch textarea::placeholder{color:#8f938e;font-size:15px}
+.equipment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.equipment-grid .skin-card{display:flex}
+.equipment-grid .skin-card p{min-height:44px}
+.skin-ownership-note{display:inline-block;font-size:11px;color:#676e5a;line-height:1.6;margin-top:5px}
+.theme-zelda .app-header{border-bottom-color:#b6c9aa}
+.theme-zelda .home-hero{background:linear-gradient(110deg,#edf4e5ee,#edf4e581),var(--theme-scene) center/cover}
+@media(max-width:680px){
+ .mobile-appearance-link{display:flex;align-items:center;gap:9px;width:100%;min-height:45px;margin:0 0 21px;padding:11px 14px;border:1px solid #b8c9b2;border-radius:12px;background:#f2f7ed;color:#365944;font-size:14px;font-weight:750;box-shadow:0 3px 12px #38533809}
+ .mobile-appearance-link span{flex:1;text-align:left}
+ .mobile-appearance-link.active{background:#e3eddc}
+ .scratch textarea{min-height:240px;font-size:18px}
+ .scratch-modes button{min-height:44px;font-size:12px}
+ .equipment-grid{grid-template-columns:1fr}
+ .equipment-grid .skin-card{display:grid}
+}
+
+/* All pupil answer fields, including Scribble's final validation. */
+.answer-field input{min-height:100px;padding:20px 16px;font-size:35px}
+.notebook-footer .answer-field{width:330px;min-width:240px;flex:1 1 330px}
+.notebook-footer .answer-field input{min-height:110px;font-size:34px}
+.math-question .answer-field input{min-height:110px;font-size:44px}
+.adventure-answer>input{min-height:125px;padding:22px 16px;font-size:34px}
+.gate-input{min-height:85px}
+@media(max-width:900px){.notebook-footer{flex-wrap:wrap}.notebook-footer .answer-field{min-width:200px}}
+@media(max-width:680px){.notebook-footer .answer-field{width:100%;min-width:0}.notebook-footer .answer-field input{min-height:120px}.adventure-answer>input{min-height:132px;font-size:32px}.math-question .answer-field input{min-height:120px}}
+
+.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.starter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:680px){.theme-grid,.starter-grid{grid-template-columns:1fr}}
