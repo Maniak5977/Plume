@@ -177,6 +177,49 @@ export function makeChapter(theme:Theme,index:number,p:Profile,level=1):Chapter{
    math('Le goûter des derniers invités','biscuits','sub','Les premiers invités se sont servis.',index,level),
    talk(hero,'Que la fête commence !',['« Merci ! Les invitations, le goûter et les décorations sont prêts grâce à toi. Installe-toi : aujourd’hui, on fête toutes tes découvertes ! »'])];
  }
+ if(theme==='zelda'){
+  if(index===0)ms=[
+   talk('Link','Un appel dans la clairière',['Link explore les chemins de la forêt. Son amie Zelda lit les anciens signes. Un petit Korogu, l’esprit des bois, connaît les passages cachés.','Ce matin, les lumières qui guidaient les voyageurs se sont éteintes. « Cinq éclats peuvent les rallumer », explique Zelda. « Tu viens chercher le premier avec nous ? »']),
+   choose('Le sac du voyage','Link prépare son sac. Choisis une lampe pour voir les ruines ou une corde pour passer les obstacles.',['lampe','corde','ballon'],['lampe','corde'],'travelItem'),
+   talk('Link','Une liste pour ne rien oublier',['« Bon choix ! Écris le nom de ton objet sur notre liste. Ensuite, nous compterons les provisions. »']),
+   write('La liste de Link','lampe','Note l’objet que tu as choisi.','travelItem'),
+   math('Les provisions du chemin','pommes','add','Zelda réunit les provisions de l’équipe.',index,level),
+   talk('Zelda','Le carnet des éclats',['« Nous avons assez de provisions. Le Korogu a retrouvé ces cartes du voyage. Remettons-les dans le bon ordre pour trouver le premier éclat. »']),
+   order('Les étapes du voyage','Touche les cartes dans l’ordre.',['Préparer le sac','Lire le carnet','Suivre le chemin','Trouver l’éclat'],'Prépare ton sac avant de partir. Lis les indices avant de suivre le chemin.'),
+   talk('Link','Le premier éclat',['Une lumière verte apparaît sous les feuilles. « Tu as trouvé l’éclat de la clairière ! », dit Link.','Une balise se rallume. Elle indique maintenant le pont ancien. Nous irons l’explorer au prochain chapitre.'])];
+  if(index===1)ms=[
+   talk('Link','Le pont des anciens',['Le chemin mène à un vieux pont. Certains passages sont bloqués par des rochers. Zelda a trouvé un plan pour atteindre l’autre rive.','« On va compter les planches, puis choisir un chemin sûr », te propose Link.']),
+   math('Les planches du pont','planches','missing','Le charpentier a commencé la réparation.',index,level),
+   write('Le panneau du passage','pont','Écris le lieu que tu viens de découvrir.'),
+   talk('Zelda','Un chemin entre les rochers',['« Le panneau est prêt. Sur le plan, pars de la case D et rejoins le drapeau. Tu avances d’une case à la fois. »']),
+   maze('Le passage de la rivière','Trace le chemin vers l’autre rive, sans traverser les rochers.',0),
+   math('Les planches en réserve','planches','sub','Une partie des planches a servi au pont.',index,level),
+   talk('Link','De l’autre côté',['Le passage est libre. Un éclat bleu brille au bord de la rivière. « Deux éclats retrouvés ! Le temple nous attend maintenant. »'])];
+  if(index===2)ms=[
+   talk('Zelda','Le temple du miroir',['Dans le temple, une mosaïque brille sur le mur. Sa moitié droite est incomplète. « Les deux côtés doivent se refléter comme dans un miroir », explique Zelda.','Link a trouvé de petites lanternes pour éclairer la salle. Préparons-les avant de compléter les couleurs.']),
+   math('Deux rangées de lanternes','lanternes','double','Link dispose la même quantité de chaque côté de la salle.',index,level),
+   write('Le carnet du temple','miroir','Note l’indice de Zelda dans le carnet.'),
+   talk('Zelda','Les couleurs se répondent',['« Regarde la ligne au milieu. Une case bleue à gauche doit trouver une case bleue à droite, à la même hauteur et à la même distance. »']),
+   symmetry('La mosaïque du temple','Complète la moitié droite avec les couleurs en miroir.'),
+   math('La réserve de lanternes','lanternes','sub','Tu allumes les lanternes du temple.',index,level),
+   talk('Link','Le temple s’illumine',['Les mosaïques brillent ensemble. L’éclat du miroir apparaît. « Notre troisième éclat ! Regarde, une lumière nous montre la tour au sommet de la colline. »'])];
+  if(index===3)ms=[
+   talk('Link','La tour des vents',['Au sommet de la colline, des roues tournent avec le vent. Quatre paniers attendent près du mécanisme.','« Pour rallumer la tour, deux paniers doivent donner exactement la quantité indiquée », explique Zelda. « Prenons le temps de compter. »']),
+   balance('Les paniers de la tour','Choisis exactement deux paniers pour obtenir le total indiqué.'),
+   write('Le message du gardien','lumière','Écris ce que l’équipe veut retrouver.'),
+   math('Les pierres du mécanisme','pierres','add','Le Korogu apporte deux sacs.',index,level),
+   talk('Zelda','Presque au bout du voyage',['La roue se remet à tourner. Une fenêtre s’ouvre et laisse apparaître un éclat doré. « Comptons les réserves pour la dernière étape. »']),
+   math('Les provisions du retour','pommes','sub','Une partie du sac sert au repas de l’équipe.',index,level),
+   talk('Link','La dernière balise',['« Quatre éclats ! Le dernier est au château. Les signes que nous avons appris nous aideront à le retrouver. »'])];
+  if(index===4)ms=[
+   talk('Zelda','La lumière du royaume',['Vous arrivez dans la salle des balises du château. Link pose les quatre premiers éclats. Un cinquième emplacement reste sombre.','« Ces cartes portent les indices du voyage. Relions chaque lieu à ce que nous y avons découvert », propose Zelda.']),
+   matching('Les souvenirs du voyage','Relie chaque lieu à son indice.',[{left:'La clairière',right:'Le carnet'},{left:'Le pont',right:'La rivière'},{left:'Le temple',right:'Le miroir'},{left:'La tour',right:'Le vent'}]),
+   math('La dernière réserve','unités de lumière','cross','Le château reçoit une nouvelle livraison.',index,level),
+   write('La bonne nouvelle','La forêt brille.','Écris le message pour les voyageurs.'),
+   talk('Link','Tous les éclats réunis',['Zelda déchiffre le dernier signe. Une lumière blanche apparaît dans le cinquième emplacement.','« Tu as compris les indices ! Il reste à préparer les provisions pour les voyageurs qui reviennent. »']),
+   math('Le repas des voyageurs','pommes','add','Le Korogu apporte les derniers paniers.',index,level),
+   talk('Zelda','Merci, aventurier !',['Les cinq balises brillent au-dessus de la forêt. Link et le Korogu montrent le chemin aux voyageurs.','« Tes mots, tes calculs et tes idées nous ont aidés à rallumer le royaume. Tous les éclats resteront dans ton aventure. »'])];
+ }
  return {version:ADVENTURE_VERSION,theme,chapter:index,index:0,complete:false,selections:{},missions:ms};
 }
 export function applySelections(ch:Chapter){for(const m of ch.missions){if(m.kind==='write'&&m.selectionKey&&ch.selections?.[m.selectionKey]){m.target=ch.selections[m.selectionKey];m.prompt=m.freeWrite?'Écris le nom que tu veux donner à ta maison.':`${m.context??''} Écris « ${m.target} » dans la case.`;}if(m.construction?.selectionKey&&ch.selections?.[m.construction.selectionKey])m.construction.material=ch.selections[m.construction.selectionKey];}}

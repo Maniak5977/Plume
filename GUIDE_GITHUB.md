@@ -1,63 +1,36 @@
-# Mettre Plume + Boulier sur GitHub
+# Plume + Boulier V5 — 13 octobre 2026
 
-Cette archive contient le code de la V3 publiée le 12 octobre 2026 :
-Plume, Boulier, les trois aventures, les avatars, les skins, les décors,
-la police BelleAllure et les migrations de la base de données.
+Site : https://plume-boulier.m-leporcher.chatgpt.site
 
-## Importer le projet
+## Mettre à jour ton dépôt existant
 
-1. Décompresse `Plume-Boulier_GitHub_V3.zip`.
-2. Ouvre le dossier `Plume-Boulier` obtenu après extraction.
-3. Crée un dépôt GitHub dédié, par exemple `Plume-Boulier`.
-4. Ajoute **le contenu du dossier à la racine du dépôt** : `package.json`,
-   `README.md`, `app/`, `components/`, `lib/`, `public/`, etc. Le ZIP lui-même
-   ne remplace pas les fichiers du projet.
-5. Conserve aussi les fichiers et dossiers commençant par un point :
-   `.gitignore`, `.npmrc` et `.openai/`. Si l'import dans le navigateur ne
-   les affiche pas, utilise Git ou GitHub Desktop pour importer le dossier complet.
-6. Enregistre ce premier ajout avec un message tel que « Import de Plume + Boulier V3 ».
+1. Décompresse `Plume-Boulier_GitHub_V5.zip`.
+2. Ouvre le dossier local de ton dépôt déjà cloné avec GitHub Desktop.
+3. Copie **le contenu** du dossier `Plume-Boulier` dans ce dépôt : fichiers et tous les sous-dossiers. Accepte le remplacement des anciens fichiers du projet. Conserve le dossier `.git` de ton dépôt existant.
+4. Vérifie que `package.json`, `README.md`, `app/`, `components/`, `lib/`, `public/` et `scripts/` sont au même niveau. Ne crée pas un deuxième dossier `Plume-Boulier` à l’intérieur du dépôt.
+5. Copie également `.openai/`, `.gitignore` et `.npmrc`. Le dossier `public/` entier est nécessaire : images et police.
+6. Dans GitHub Desktop, saisis par exemple « V5 : Scribble, mobile, allemand débutant et aventure de forêt » comme Summary, puis clique Commit to… et Push origin.
 
-Garde le dossier `public/` entier : il contient les illustrations, les skins
-et la police d'écriture. Aucun dossier `node_modules/` ne doit être ajouté.
+GitHub conserve le code. Il ne republie pas automatiquement le site et ne copie pas les comptes ou progressions. Ces données restent dans la base en ligne. L’archive ne contient ni dépendances, ni caches, ni jetons, ni données de compte.
 
-Si tu préfères la ligne de commande, dans le dossier extrait :
+## Retrouver les nouveautés
 
-```sh
-git init -b main
-git add .
-git commit -m "Import de Plume + Boulier V3"
-git remote add origin URL_DU_DEPOT_GITHUB
-git push -u origin main
-```
+- Actualise la page sur les appareils.
+- **Marius / Plume** : cahier 20 % plus grand, huit lettres par ligne et case finale agrandie. Une majuscule ajoutée par Scribble ne bloque plus la validation. Le modèle indique toujours la casse à apprendre.
+- Toutes les cases de réponse au Pencil sont agrandies, y compris Boulier, les aventures et les matières du collège.
+- **Léon / skins** : un achat habille uniquement l’avatar concerné. Le Cosmos déjà payé est conservé pour son explorateur. Les autres avatars ont une garde-robe distincte et chacun retrouve sa dernière tenue.
+- **Mobile** : « Mon ambiance » apparaît en haut de chaque écran. Le brouillon a deux modes : « Pencil / souris » et « Clavier ». Au clavier, il peut saisir plusieurs lignes de calculs.
+- **Allemand** : « Je débute · avec des modèles » propose salutations, couleurs, premiers mots, nombres de 1 à 10 et petites phrases guidées. « Je vais plus loin » reste disponible. Les réussites déjà gagnées sont conservées.
+- **Ambiance de forêt** : dans Mon ambiance, choisir « Zelda · la forêt des échos ». L’éclaireur est gratuit dans Ma collection ; la princesse et l’esprit des bois sont en boutique. Les tenues azur/Cosmos et l’épée/l’arc se trouvent dans Mon univers & mon look. Les compagnons sont des créations fantasy originales inspirées de cet univers.
+- **Aventures 5e** : choisir Orée ou « Zelda · forêt des échos ». L’aventure de Link a cinq chapitres, avec dialogues, maths de 5e, français, anglais, allemand guidé et énigmes. Les éclats retrouvés restent visibles sur la carte.
 
-Remplace `URL_DU_DEPOT_GITHUB` par l'URL de ton nouveau dépôt vide.
-Ces commandes concernent un nouveau dépôt ; pour un dépôt existant, clone-le
-d'abord et copie les fichiers dans ce clone avant de faire un commit.
+Le profil « Papa — test » permet d’essayer les deux niveaux via l’espace parent, en conservant les achats et progrès. Les profils enfants suivent les seuils d’étoiles et les chapitres précédents ; le profil de test ouvre tout.
 
-## Le site déjà en ligne
+## Hébergement et essai local
 
-Adresse actuelle : https://plume-boulier.m-leporcher.chatgpt.site
+Cette application utilise un serveur, la connexion parent fournie par ChatGPT/Sites et D1. GitHub Pages seul ne suffit pas. Un hébergement indépendant nécessite de configurer une base et d’adapter l’authentification. `.openai/hosting.json` conserve l’identité du site actuel sans clé secrète.
 
-GitHub conserve le code source. Il ne copie pas les comptes, les points ni
-les progressions : ces données restent dans la base D1 du site actuellement
-hébergé. Importer le projet sur GitHub ne modifie pas le site en ligne et ne
-relie pas automatiquement les futures modifications GitHub à sa publication.
-
-Cette version contient un serveur, une connexion au compte parent et une
-base de données. **GitHub Pages seul ne peut pas la faire fonctionner.**
-Le fichier `.openai/hosting.json` conserve l'identité du site actuel ; cet
-identifiant n'est pas une clé secrète et ne donne pas accès au compte.
-
-Pour un hébergement indépendant, il faudra configurer une base Cloudflare D1
-et adapter l'authentification : les en-têtes d'identité ChatGPT sont fournis
-par l'hébergement actuel. Il ne suffit pas de publier les fichiers statiques.
-
-## Développer en local
-
-Prérequis : Node.js 22.13 ou plus récent, et pnpm 11.25.0
-(version verrouillée dans `package.json`).
-
-Dans le dossier extrait :
+Prérequis : Node.js 22.13 ou plus récent et pnpm 11.25.0.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -66,22 +39,6 @@ pnpm exec wrangler d1 execute site-creator-d1 --local --config dist/server/wrang
 pnpm dev
 ```
 
-Ouvre http://localhost:5173 puis utilise le bouton de connexion affiché.
-Le projet prévoit une identité de test locale sur `localhost` : elle est
-indépendante du compte parent et de la base du site en ligne. Les migrations
-ci-dessus initialisent uniquement la base locale. Le compte de test nommé
-« Seedy » est un exemple du moteur de développement.
+Ouvre http://localhost:5173 et utilise la connexion locale proposée. Le compte d’exemple « Seedy » et sa base locale sont indépendants du compte parent en ligne. La migration SQL existante suffit.
 
-Les fichiers `.env*`, l'état local `.wrangler/`, les dépendances et les sorties
-de compilation sont exclus du dépôt par `.gitignore`.
-
-## Provenance et vérification
-
-Source publiée : `f4c377d0372fd563373678ad58d6f5ecb951e77e`.
-TypeScript, les 28 tests et la compilation de production ont passé avant
-la publication. Le README et ce guide ont été complétés pour cet export ;
-le code de l'application est inchangé. Le cache `tsconfig.tsbuildinfo` a
-été omis, il est régénéré par TypeScript.
-
-Cet export contient les sources et les ressources du projet, pas les
-données des profils ni les traces d'écriture des utilisateurs.
+Le README décrit les fonctions et limites. Les 51 tests, TypeScript et la compilation de production ont passé. Les essais physiques au Pencil, le rendu mobile réel et l’audio restent à vérifier sur vos appareils.

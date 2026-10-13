@@ -1,15 +1,18 @@
-import {AVATARS, SKINS, LETTERS, WORDS, PHRASES, STORIES, type Theme} from './catalog';
+import {AVATARS, SKINS, EQUIPMENT, THEMES, LETTERS, WORDS, PHRASES, STORIES, type Theme} from './catalog';
 import {makeChapter,applySelections,validatePuzzle,validateConstruction,adventureKey,ADVENTURE_VERSION,type PuzzleSpec,type ConstructionSpec} from './adventures';
+import {performCollege,CollegeError,redactCollege} from './college';
+import type {CollegeState} from './college-types';
+import {upgradeWardrobe,ownedSkins,equippedSkin,avatarEquipment} from './wardrobe';
 export {makeChapter} from './adventures';
 export type Question={id:string;topic:string;title:string;prompt:string;answer:number;hint:string;visual?:{kind:string;a:number;b:number};attempts:number;help:boolean;solved:boolean;award:number};
 export type MathSession={id:string;topic:string;rule:string;questions:Question[];index:number;points:number;finished:boolean;summary?:{points:number;bonus:number}};
 export type Mission={id:string;kind:'dialogue'|'choice'|'write'|'math'|'puzzle'|'build';title:string;prompt:string;target?:string;question?:Question;sequence?:string[];options?:string[];solutions?:string[];solution?:string;solved:boolean;help:boolean;attempts:number;speaker?:string;lines?:string[];selectionKey?:string;freeWrite?:boolean;context?:string;calculation?:string;puzzle?:PuzzleSpec;construction?:ConstructionSpec;draft?:any;hint?:string;cast?:string[]};
 export type Chapter={version?:number;theme:Theme;chapter:number;missions:Mission[];index:number;complete:boolean;selections?:Record<string,string>};
 export type PlumeTask={id:string;mode:'letter'|'word'|'phrase';level:number;target:string;solved:boolean;points:number};
-export type Profile={id:string;name:string;test:boolean;theme:Theme;avatar:string;skin?:string;skins?:string[];owned:string[];stars:number;earned:number;schoolStars:number;plumeDone:number;mathDone:number;letterLevel:number;wordLevel:number;phraseLevel:number;completedLetters:string[];topics:Record<string,{solved:number;help:number;errors:number}>;recent:string[];session:MathSession|null;plumeTask:PlumeTask|null;adventures:Record<string,Chapter>;adventureRewards:string[];completedChapters:string[];adventureChoices?:Partial<Record<Theme,Record<string,string>>>;houseBlocks?:Record<string,string>;history:{id:string;label:string;stars:number;at:number}[];createdAt:number};
+export type Profile={id:string;name:string;grade?:'ce1'|'cinquieme';college?:CollegeState;test:boolean;theme:Theme;avatar:string;skin?:string;skins?:string[];skinsByAvatar?:Record<string,string[]>;equippedSkins?:Record<string,string>;equipmentOwned?:Record<string,string[]>;equippedEquipment?:Record<string,string>;owned:string[];stars:number;earned:number;schoolStars:number;plumeDone:number;mathDone:number;letterLevel:number;wordLevel:number;phraseLevel:number;completedLetters:string[];topics:Record<string,{solved:number;help:number;errors:number}>;recent:string[];session:MathSession|null;plumeTask:PlumeTask|null;adventures:Record<string,Chapter>;adventureRewards:string[];completedChapters:string[];adventureChoices?:Partial<Record<Theme,Record<string,string>>>;houseBlocks?:Record<string,string>;history:{id:string;label:string;stars:number;at:number}[];createdAt:number};
 export type Family={version:1;profiles:Profile[];settings:{firstChapter:number;nextChapter:number;lineGap:number;adventureDifficulty?:number};handled:string[];receipts?:Record<string,Record<string,any>>};
 export class GameError extends Error {}
-export function newProfile(name:string,test=false,theme:Theme='blocks',avatar='explorer'):Profile{return {id:crypto.randomUUID(),name:name.trim().slice(0,24)||'Mon profil',test,theme,avatar,skin:'classic',skins:['classic'],owned:AVATARS.filter(a=>a.price===0).map(a=>a.id),stars:test?600:0,earned:0,schoolStars:0,plumeDone:0,mathDone:0,letterLevel:0,wordLevel:0,phraseLevel:0,completedLetters:[],topics:{},recent:[],session:null,plumeTask:null,adventures:{},adventureRewards:[],completedChapters:[],history:[],createdAt:Date.now()};}
+export function newProfile(name:string,test=false,theme:Theme='blocks',avatar='explorer',grade:'ce1'|'cinquieme'='ce1'):Profile{return {id:crypto.randomUUID(),name:name.trim().slice(0,24)||'Mon profil',grade,test,theme,avatar,skin:'classic',skins:['classic'],skinsByAvatar:{},equippedSkins:{},equipmentOwned:{},equippedEquipment:{},owned:AVATARS.filter(a=>a.price===0).map(a=>a.id),stars:test?600:0,earned:0,schoolStars:0,plumeDone:0,mathDone:0,letterLevel:0,wordLevel:0,phraseLevel:0,completedLetters:[],topics:{},recent:[],session:null,plumeTask:null,adventures:{},adventureRewards:[],completedChapters:[],history:[],createdAt:Date.now()};}
 export function newFamily():Family{return {version:1,profiles:[newProfile('Papa — test',true)],settings:{firstChapter:100,nextChapter:150,lineGap:14},handled:[]};}
 export function randint(lo:number,hi:number){return Math.floor(Math.random()*(hi-lo+1))+lo;}
 const uid=()=>crypto.randomUUID();
@@ -58,26 +61,43 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
  const action=String(body.action??'');
  if(action==='createProfile'){
   if(f.profiles.length>=8)throw new GameError('Il y a déjà 8 profils.');
-  const theme=body.theme as Theme;if(!['blocks','dinos','snoopy'].includes(theme))throw new GameError('Choisis une ambiance.');
+  const theme=body.theme as Theme;if(!THEMES.some(t=>t.id===theme))throw new GameError('Choisis une ambiance.');
   const a=AVATARS.find(x=>x.id===body.avatar&&x.price===0);if(!a)throw new GameError('Choisis un avatar gratuit.');
-  const p=newProfile(norm(body.name),false,theme,a.id);f.profiles.push(p);return {profileId:p.id};
+  const grade=body.grade??'ce1';if(grade!=='ce1'&&grade!=='cinquieme')throw new GameError('Choisis CP–CE1 ou 5e.');
+  const p=newProfile(norm(body.name),false,theme,a.id,grade);f.profiles.push(p);return {profileId:p.id};
  }
  if(action==='settings'){
   for(const [key,min,max] of [['firstChapter',20,1000],['nextChapter',20,1000],['lineGap',10,22]] as const){const v=Number(body[key]);if(Number.isFinite(v))f.settings[key]=Math.min(max,Math.max(min,Math.round(v)));}if(body.adventureDifficulty===1||body.adventureDifficulty===2)f.settings.adventureDifficulty=body.adventureDifficulty;return {};
  }
- const p=profile(f,String(body.profileId));
+ const p=profile(f,String(body.profileId));upgradeWardrobe(p);
+ if(action==='setLevel'){if(body.grade!=='ce1'&&body.grade!=='cinquieme')throw new GameError('Choisis CP–CE1 ou 5e.');p.grade=body.grade;return {};}
+ if(action.startsWith('college')){try{return performCollege(f,p,body,(stars,label,id,school)=>reward(p,stars,label,id,school));}catch(e){if(e instanceof CollegeError)throw new GameError(e.message);throw e;}}
+ if(p.grade==='cinquieme'&&['startMath','mathHelp','checkMath','nextMath','startPlume','checkPlume','startAdventure','adventureHelp','checkAdventure','nextAdventure','saveAdventureDraft'].includes(action))throw new GameError('Cet exercice appartient au parcours CP–CE1. Choisis une matière du campus.');
  if(action==='appearance'){
-  if(body.theme&&['blocks','dinos','snoopy'].includes(body.theme))p.theme=body.theme;
-  if(body.avatar){if(!p.owned.includes(body.avatar))throw new GameError('Ce personnage est encore dans la boutique.');p.avatar=body.avatar;}if(body.skin){if(!(p.skins??['classic']).includes(body.skin))throw new GameError('Cette tenue est encore dans la boutique.');p.skin=body.skin;}return {};
+  if(body.theme&&THEMES.some(t=>t.id===body.theme))p.theme=body.theme;
+  if(body.avatar){if(!p.owned.includes(body.avatar))throw new GameError('Ce personnage est encore dans la boutique.');p.avatar=body.avatar;}
+  if(body.skin){if(!ownedSkins(p).includes(body.skin))throw new GameError('Cette tenue appartient à un autre avatar ou reste dans la boutique.');p.equippedSkins??={};p.equippedSkins[p.avatar]=body.skin;}
+  if(body.equipment){if(body.equipment!=='none'&&(!avatarEquipment(p.avatar).some(x=>x.id===body.equipment)||!p.equipmentOwned?.[p.avatar]?.includes(body.equipment)))throw new GameError('Cet équipement reste dans la boutique de ce personnage.');p.equippedEquipment??={};p.equippedEquipment[p.avatar]=body.equipment;}
+  p.skin=equippedSkin(p);p.skins=[...ownedSkins(p)];return {};
  }
  if(action==='buySkin'){
-  const skin=SKINS.find(x=>x.id===body.skin);if(!skin)throw new GameError('Tenue introuvable.');p.skins??=['classic'];
-  if(p.skins.includes(skin.id))return {alreadyOwned:true};if(p.stars<skin.price)throw new GameError(`Il manque ${skin.price-p.stars} étoiles.`);
-  p.stars-=skin.price;p.skins.push(skin.id);p.skin=skin.id;return {bought:skin.id};
+  const skin=SKINS.find(x=>x.id===body.skin),avatar=String(body.avatar??p.avatar);if(!skin)throw new GameError('Tenue introuvable.');
+  if(!p.owned.includes(avatar))throw new GameError('Choisis un personnage de ta collection.');
+  if(ownedSkins(p,avatar).includes(skin.id))return {alreadyOwned:true};if(p.stars<skin.price)throw new GameError(`Il manque ${skin.price-p.stars} étoiles.`);
+  p.skinsByAvatar??={};p.skinsByAvatar[avatar]??=['classic'];p.equippedSkins??={};
+  p.stars-=skin.price;p.skinsByAvatar[avatar].push(skin.id);p.equippedSkins[avatar]=skin.id;
+  if(avatar===p.avatar){p.skin=skin.id;p.skins=[...ownedSkins(p)];}return {bought:skin.id,avatar};
+ }
+ if(action==='buyEquipment'){
+  const item=EQUIPMENT.find(x=>x.id===body.equipment),avatar=String(body.avatar??p.avatar);
+  if(!item||!item.avatars.includes(avatar)||!p.owned.includes(avatar))throw new GameError('Cet équipement ne convient pas à ce personnage.');
+  p.equipmentOwned??={};p.equipmentOwned[avatar]??=[];if(p.equipmentOwned[avatar].includes(item.id))return {alreadyOwned:true};
+  if(p.stars<item.price)throw new GameError(`Il manque ${item.price-p.stars} étoiles.`);
+  p.stars-=item.price;p.equipmentOwned[avatar].push(item.id);p.equippedEquipment??={};p.equippedEquipment[avatar]=item.id;return {bought:item.id,avatar};
  }
  if(action==='buy'){
   const a=AVATARS.find(x=>x.id===body.avatar);if(!a)throw new GameError('Personnage introuvable.');if(p.owned.includes(a.id))return {alreadyOwned:true};
-  if(p.stars<a.price)throw new GameError(`Il manque ${a.price-p.stars} étoiles.`);p.stars-=a.price;p.owned.push(a.id);p.avatar=a.id;return {bought:a.id};
+  if(p.stars<a.price)throw new GameError(`Il manque ${a.price-p.stars} étoiles.`);p.stars-=a.price;p.owned.push(a.id);p.avatar=a.id;p.skin=equippedSkin(p);p.skins=[...ownedSkins(p)];return {bought:a.id};
  }
  if(action==='startMath'){
   if(p.session&&!p.session.finished&&!body.replace)return {resumed:true};
@@ -113,7 +133,7 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
  if(action==='checkPlume'){
   const t=p.plumeTask;if(!t||body.taskId!==t.id)throw new GameError('Ouvre le cahier de cette lettre.');if(t.solved)return {correct:true,points:t.points,already:true};
   const answer=norm(body.answer);if(!answer)throw new GameError('Écris dans la case de validation.');
-  if(answer!==t.target)return {correct:false};
+  if(answer.toLocaleLowerCase('fr-FR')!==norm(t.target).toLocaleLowerCase('fr-FR'))return {correct:false};
   if(!p.test&&(!Array.isArray(body.strokes)||body.strokes.length!==3||body.strokes.some((x:any)=>Number(x)<(t.mode==='letter'?8:3))))throw new GameError('Prends le temps d’écrire sur les trois lignes avant de valider.');
   t.solved=true;t.points=10;p.plumeDone++;
   if(t.mode==='letter'){p.completedLetters=Array.from(new Set([...p.completedLetters,t.target]));if(t.level===p.letterLevel)p.letterLevel=Math.min(52,p.letterLevel+1);}
@@ -148,7 +168,7 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
   if(m.kind==='dialogue')throw new GameError('Continue l’histoire avec le bouton.');
   const a=norm(body.answer);let correct=false;
   if(m.kind==='math')correct=a!==''&&Number(a)===m.question?.answer;
-  if(m.kind==='write')correct=m.freeWrite?/^[\p{L}\p{M} ’'\-]{2,32}$/u.test(a):a===m.target;
+  if(m.kind==='write')correct=m.freeWrite?/^[\p{L}\p{M} ’'\-]{2,32}$/u.test(a):a.toLocaleLowerCase('fr-FR')===norm(m.target).toLocaleLowerCase('fr-FR');
   if(m.kind==='choice')correct=!!m.solutions?.includes(a);
   if(m.kind==='puzzle'&&m.puzzle)correct=validatePuzzle(m.puzzle,body.answer);
   if(m.kind==='build'&&m.construction)correct=validateConstruction(m.construction,body.answer);
@@ -165,6 +185,7 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
 export function publicFamily(f:Family):any{
  const out=structuredClone(f) as any;delete out.handled;delete out.receipts;
  for(const p of out.profiles){
+  if(p.college)redactCollege(p.college);
   if(p.session)for(const q of p.session.questions){delete q.answer;if(!q.help)delete q.hint;}
   for(const ch of Object.values(p.adventures) as any[]){for(const m of ch.missions){delete m.solution;delete m.solutions;if(m.puzzle)delete m.puzzle.solution;if(m.question){delete m.question.answer;if(!m.help)delete m.question.hint;}}}
  }

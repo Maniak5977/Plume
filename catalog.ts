@@ -1,8 +1,9 @@
-export type Theme = 'blocks' | 'dinos' | 'snoopy';
+export type Theme = 'blocks' | 'dinos' | 'snoopy' | 'zelda';
 export const THEMES = [
  {id:'blocks' as Theme,name:'Aventure en blocs',subtitle:'Construis ton petit monde',color:'#558b64',image:'/art/voxel-scene.png'},
  {id:'dinos' as Theme,name:'L’île des dinosaures',subtitle:'À la rencontre des géants',color:'#c38642',image:'/art/dino-scene.png'},
  {id:'snoopy' as Theme,name:'Le jardin de Snoopy',subtitle:'Un jardin plein de surprises',color:'#537da4',image:'/art/snoopy-scene.png'},
+ {id:'zelda' as Theme,name:'Zelda · la forêt des échos',subtitle:'Explore avec Link et Zelda',color:'#4f8063',image:'/art/zelda-scene.png'},
 ];
 export const AVATARS = [
  {id:'explorer',name:'L’explorateur',theme:'blocks',price:0,row:0,col:0,blurb:'Toujours prêt à découvrir un nouveau chemin.'},
@@ -14,17 +15,22 @@ export const AVATARS = [
  {id:'snoopy',name:'Snoopy & Woodstock',theme:'snoopy',price:0,row:2,col:0,blurb:'Deux amis pour rêver et jouer.'},
  {id:'pilot',name:'Snoopy aviateur',theme:'snoopy',price:250,row:2,col:1,blurb:'Un compagnon qui vise toujours plus haut.'},
  {id:'space',name:'Snoopy astronaute',theme:'snoopy',price:500,row:2,col:2,blurb:'En route vers les étoiles !'},
+ {id:'link',name:'L’éclaireur de la forêt',theme:'zelda',price:0,row:0,col:0,blurb:'Un compagnon original en cape verte, prêt à explorer les ruines.'},
+ {id:'zelda',name:'La princesse des échos',theme:'zelda',price:350,row:0,col:1,blurb:'Une princesse originale aux tenues de voyage et aux détails fleuris.'},
+ {id:'korogu',name:'Sylve, l’esprit des bois',theme:'zelda',price:180,row:0,col:2,blurb:'Un petit esprit de la forêt qui connaît bien des secrets.'},
 ];
 export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').flatMap(x=>[x,x.toLowerCase()]);
 export const WORDS: Record<Theme,string[]> = {
  blocks:['cube','bloc','mine','bois','porte','maison'],
  dinos:['œuf','patte','piste','petit','famille','dinosaure'],
  snoopy:['ami','fête','ballon','jardin','gâteau','invité'],
+ zelda:['arc','épée','fée','forêt','temple','royaume'],
 };
 export const PHRASES: Record<Theme,string[]> = {
  blocks:['Je pose un bloc.','Je construis une cabane.','Ma maison a une porte.'],
  dinos:['Le petit suit sa maman.','Je trouve une empreinte.','Les dinosaures sont réunis.'],
  snoopy:['Snoopy invite ses amis.','Je prépare la fête.','Le jardin est très joli.'],
+ zelda:['Link suit la fée.','Je retrouve le chemin.','La forêt retrouve sa lumière.'],
 };
 export const TOPICS = [
  {id:'journey',title:'Mon parcours',sub:'Des réussites, puis une découverte',icon:'sparkles',level:'À ton rythme'},
@@ -47,11 +53,16 @@ export const STORIES:Record<Theme,{title:string;intro:string;chapters:string[];v
  blocks:{title:'La maison de la clairière',intro:'Le renard a besoin d’un abri pour l’hiver. Choisis les matériaux, prépare le chantier et construis sa maison, bloc après bloc.',chapters:['Un sol solide','L’atelier du bâtisseur','Les murs prennent forme','Un toit avant la pluie','Une maison à nous'],victory:['Les fondations sont posées !','L’atelier est prêt !','Les murs sont construits !','La maison est à l’abri !','Bienvenue dans ta maison !']},
  dinos:{title:'Le grand refuge des dinos',intro:'Après le réveil du volcan, les familles sont en sécurité au lagon. Mais certains petits ont perdu leurs parents de vue. Prépare un refuge et pars à leur rencontre.',chapters:['Le refuge du lagon','La piste des fougères','Les traces de la rivière','Le pique-nique des retrouvailles','Tous ensemble au refuge'],victory:['Le refuge est prêt !','La piste est retrouvée !','Une première famille est réunie !','Trix a retrouvé son papa !','Toutes les familles sont réunies !']},
  snoopy:{title:'La grande fête du jardin',intro:'Une invitation secrète, un jardin à préparer et des amis à accueillir… Aide Snoopy et Woodstock à organiser une fête pleine de surprises.',chapters:['Une invitation secrète','Une place pour chacun','Le goûter des amis','Des couleurs dans les branches','Bienvenue à la fête !'],victory:['Les invitations sont envoyées !','Le jardin est organisé !','Le goûter est prêt !','Les décorations sont installées !','Que la fête commence !']},
+ zelda:{title:'Link et les échos de la forêt',intro:'Les balises qui guidaient les voyageurs se sont éteintes. Link, Zelda et un Korogu ont besoin de tes mots, de tes calculs et de tes idées pour retrouver cinq éclats de lumière.',chapters:['L’appel de la clairière','Le pont des anciens','Le temple du miroir','La tour des vents','La lumière du royaume'],victory:['Le premier éclat brille !','Le passage est retrouvé !','Le temple s’est réveillé !','La tour répond à nouveau !','Les cinq éclats éclairent la forêt !']},
 };
 export const SKINS = [
  {id:'classic',name:'Style original',price:0,image:'/art/avatars.png',top:2,description:'Le look de départ de chaque compagnon.'},
  {id:'aventurier',name:'Aventurier',price:150,image:'/art/skins-aventurier.png',top:2.5,description:'Veste, foulard, sac et accessoires pour explorer ton monde.'},
  {id:'cosmos',name:'Cosmos',price:300,image:'/art/skins-cosmos.png',top:2.5,description:'Un look spatial avec des détails lumineux et des touches dorées.'},
+];
+export const EQUIPMENT:{id:string;name:string;price:number;col:number;avatars:string[];description:string}[]=[
+ {id:'sword',name:'L’épée des échos',price:100,col:0,avatars:['link','zelda'],description:'Une lame argentée et une garde bleue pour ton héros.'},
+ {id:'bow',name:'L’arc de la forêt',price:180,col:1,avatars:['link','zelda'],description:'Un arc en bois et son carquois pour explorer les sentiers.'},
 ];
 export const DINO_FRIENDS = [
  {id:'trex',name:'Téo le T-rex',description:'Ton guide au refuge. Il t’aide à retrouver les familles.'},
