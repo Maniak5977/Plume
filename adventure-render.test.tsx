@@ -4,10 +4,10 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {AdventurePlay} from '../../components/adventure-play';
 import {makeChapter} from '../../lib/adventures';
 import {newProfile} from '../../lib/game';
-import {THEMES,type Theme} from '../../lib/catalog';
-test('toutes les étapes des vingt chapitres produisent une interface complète',()=>{
+import {THEMES,STORIES,type Theme} from '../../lib/catalog';
+test('toutes les étapes des 82 chapitres produisent une interface complète',()=>{
  const p=newProfile('Papa',true);let count=0;
- for(const theme of THEMES.map(t=>t.id))for(let n=0;n<5;n++){
+ for(const theme of THEMES.map(t=>t.id))for(let n=0;n<STORIES[theme].chapters.length;n++){
   const ch=makeChapter(theme,n,p);
   for(let i=0;i<ch.missions.length;i++){
    ch.index=i;const m=ch.missions[i];
@@ -22,5 +22,5 @@ test('toutes les étapes des vingt chapitres produisent une interface complète'
   }
   ch.complete=true;assert.ok(renderToStaticMarkup(<AdventurePlay chapter={ch} profile={p} busy={false} onAction={async()=>({})} onBack={()=>{}} onNextChapter={()=>{}} say={()=>{}} mathHelp={()=>null}/>).includes('CHAPITRE'));
  }
- assert.ok(count>=110);
+ assert.ok(count>=650);
 });

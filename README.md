@@ -1,4 +1,4 @@
-# Plume + Boulier — V5
+# Plume + Boulier — V6
 
 Application éducative pour iPad / Apple Pencil et mobile : un parcours CP–CE1 et un campus de 5e avec maths, français, anglais et allemand.
 
@@ -7,9 +7,9 @@ Application éducative pour iPad / Apple Pencil et mobile : un parcours CP–CE1
 - Compte parent ChatGPT privé, profils enfants séparés, profil « Papa — test » avec accès libre.
 - Sauvegarde D1 par propriétaire avec contrôle de concurrence ; gains et achats vérifiés côté serveur.
 - Plume : 52 niveaux A/a…Z/z, lignage commun basé sur les métriques BelleAllure, cahier agrandi de 20 %, huit modèles de lettres par ligne, trois lignes de pratique et validation dans un champ compatible Griffonner. Les majuscules ajoutées par Scribble sont acceptées ; les lettres, accents et ponctuation restent vérifiés. Décomposition pédagogique préparée pour A et a ; modèles complets pour les autres lettres. Mots et phrases après les lettres, ou accès direct dans le profil de test.
-- Boulier : séances de dix exercices générés selon la notion, aides visuelles et audio, brouillon au stylet ou au clavier, avec notes temporaires par exercice sur cet appareil. Addition, soustraction, compléments à 10, doubles, suites, problèmes, quatre règles autour de 100.
+- Boulier : séances de dix exercices générés selon la notion, aides visuelles et audio, brouillon au stylet ou au clavier, avec notes temporaires par exercice sur cet appareil. Addition, soustraction, compléments à 10, doubles, suites, problèmes, quatre règles autour de 100, groupes identiques, prix, centaines et problèmes en deux étapes.
 - Boutique : douze personnages, quatre gratuits, avec garde-robe et équipements propres à chaque avatar. L’achat d’une tenue ne débloque pas celle des autres personnages.
-- Aventures V2 : quatre univers, cinq chapitres narratifs chacun. Dialogues, choix avec écriture du choix, calculs avec des dizaines dès le départ, construction interactive en blocs, ordre, labyrinthe, associations, symétrie, aménagement, quantités et mémoire. Les constructions et brouillons d’énigmes sont sauvegardés ; chaque mission validée fait avancer l’histoire.
+- Aventures : quatre univers, 82 chapitres en CP–CE1 (36 dans le monde des bâtisseurs, 36 dans le royaume de Zelda, cinq dinosaures et cinq au jardin). Dialogues, choix avec écriture du choix, calculs avec des dizaines dès le départ, construction interactive en blocs, ordre, labyrinthe, associations, symétrie, aménagement, quantités et mémoire. Les constructions et brouillons d’énigmes sont sauvegardés ; chaque mission validée fait avancer l’histoire.
 - Étoiles d'entraînement indépendantes du solde de boutique. Déblocage à 100, 250, 400, 550 et 700 étoiles par défaut, au moins une activité Plume et Boulier ; seuils réglables.
 - Lecture audio avec la synthèse vocale disponible sur l'appareil.
 
@@ -81,10 +81,9 @@ commence désormais par des premières activités guidées, puis propose une con
 
 ### Validation de cette mise à jour
 
-TypeScript et 51 tests : domaines de
+TypeScript et 64 tests : domaines de
 calcul, génération sans répétition dans chaque série, équivalence des fractions,
-langues, récompenses, compatibilité CE1, redaction de l'API, progression des cinq
-missions et rendu de tous les types de pages. Compilation de production avant
+langues, récompenses, compatibilité CE1, redaction de l'API, progression des 82 chapitres CE1 et des 36 chapitres Zelda collège, conservation des récompenses et rendu de tous les types de pages. Compilation de production avant
 publication. Lecture audio, ergonomie et comportement du Pencil à essayer sur iPad
 physique ; aucun test de navigateur n'a été exécuté dans cet environnement.
 
@@ -107,3 +106,32 @@ Une ambiance inspirée de Zelda complète les trois univers précédents. Ses av
 Les notes du brouillon clavier restent dans la session de l’appareil et le bouton Mon ambiance apparaît en haut des écrans mobiles. Aucun navigateur ni iPad physique n’a été utilisé pour les contrôles ; Griffonner, l’audio et le confort réel restent à essayer sur vos appareils.
 
 Consulte [GUIDE_GITHUB.md](GUIDE_GITHUB.md) pour importer cette version et retrouver les nouveautés.
+
+
+## Nouveautés V6 — quêtes sur l’année et jeux de réflexion
+
+Deux grandes quêtes comptent désormais 36 chapitres en six actes. Elles se parcourent au rythme de l’enfant, sans verrou de calendrier. Les seuils d’étoiles d’entraînement et le chapitre précédent restent nécessaires ; le profil de test permet de tout essayer.
+
+### Les notions de chaque profil
+
+Le parcours CP–CE1 conserve ses exercices d’écriture et ses calculs progressifs. Les nouveaux actes abordent addition/soustraction de dizaines, groupes de 2 et 5, prix, centaines et problèmes en deux étapes.
+
+Le profil de 5e utilise ses notions de maths, français et anglais. L’allemand reste débutant avec des modèles visibles par défaut. Dans l’espace parent, « Les notions vues en classe » permet soit de suivre ses entraînements, soit de choisir les notions par matière. Les niveaux anglais et allemand sont indépendants du niveau de maths. Chaque profil garde sa propre sélection. Les nouveaux chapitres suivent ce choix ; les étapes encore à résoudre d’une aventure en cours sont actualisées en conservant les étapes déjà réussies et les verrous validés.
+
+### Les six régions du royaume
+
+Les 36 chapitres de Zelda présentent Link, Zelda et les compagnons dès le départ, puis suivent le village, la forêt, la montagne, le lac et la citadelle. Chaque chapitre possède un objectif, des indices, des dialogues et des tâches contextualisées. Au collège, cinq chapitres par acte proposent un jeu de réflexion indépendant des cours ; le dernier ouvre un sanctuaire à trois verrous scolaires, sauvegardés séparément.
+
+Les casse-têtes alternent sudoku, mots cachés, devinettes, rébus et labyrinthes. Pour environ 7 ans : sudoku 4 × 4, quatre mots courts horizontaux/verticaux, devinettes simples et petit labyrinthe. Pour environ 12 ans : sudoku 9 × 9, six mots pouvant être diagonaux ou inversés, devinettes de logique et labyrinthe plus grand. Les sudokus sont générés avec une solution unique ; les grilles de mots et labyrinthes changent à chaque nouvelle partie. Les rébus sont illustrés par des pictogrammes et leurs sons peuvent être lus. Les réponses acceptent la casse ajoutée par Scribble ; pour ces jeux, les accents ne bloquent pas la découverte du mot. Aucun changement n’est apporté aux exigences orthographiques des cours de langue.
+
+### Le monde des bâtisseurs
+
+Maison, pièces, jardin, serre, ferme, mine, forge, village, bibliothèque, port, gare et musée : la quête CP–CE1 ajoute des constructions à des lieux conservés sur le profil. Les missions de mine font récolter charbon, fer et diamants. Les missions de construction apportent les blocs nécessaires au plan et des matériaux pour continuer.
+
+« Mon monde en blocs », dans Aventures, ouvre un atelier libre : choix du lieu, quatre niveaux de construction, matériaux disponibles et gomme. Le monde et les stocks sont enregistrés dans le compte ; les blocs enlevés redeviennent disponibles. L’atelier ne donne pas d’étoiles. Les gains de mission et de minerais sont mémorisés une seule fois, même en rejouant. Les anciennes maisons sont reprises dans le nouvel atelier.
+
+### Compatibilité et vérification
+
+Les anciens achats, étoiles, constructions et chapitres validés restent conservés. Les cinq anciens chapitres conservent leur identité et leurs récompenses. Les champs supplémentaires sont optionnels dans le JSON : aucune nouvelle migration SQL n’est nécessaire.
+
+Les 64 tests couvrent notamment toutes les quêtes jusqu’à leur fin, le stock entre les lieux, les doubles récompenses, les changements de cours, les anciens comptes, la solution unique des sudokus, la validation des nouveaux casse-têtes et le rendu des 396 étapes Zelda collège ainsi que de toutes les étapes CE1. TypeScript et la compilation de production sont requis avant publication. Le Pencil, la synthèse vocale et le rendu réel sur mobile restent à essayer sur vos appareils.

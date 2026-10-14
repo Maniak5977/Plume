@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {puzzleAnswer} from './quest-helpers';
 import assert from 'node:assert/strict';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {newFamily,newProfile,perform,publicFamily,GameError} from '../../lib/game';
@@ -44,12 +45,7 @@ test('la migration allemande préserve les réponses récompensées et allège l
  const p=newProfile('Grand',false,'blocks','explorer','cinquieme');p.college=newCollegeState();const s=makeCollegeSession('allemand','de-modal','cinquieme',p);p.college.session=s;delete s.contentVersion;s.questions[0].solved=true;s.questions[0].award=10;s.points=10;s.index=1;p.stars=10;p.schoolStars=10;const first=structuredClone(s.questions[0]);
  assert.ok(upgradeGerman(p));assert.deepEqual(s.questions[0],first);assert.equal(s.difficulty,'revision');assert.equal(s.topic,'mixed');assert.ok(s.questions.slice(1).every(q=>!!q.support));assert.equal(s.points,10);assert.equal(p.stars,10);assert.equal(p.schoolStars,10);assert.equal(upgradeGerman(p),false);
 });
-function solve(spec:PuzzleSpec):any{
- if(['order','match','symmetry'].includes(spec.type))return spec.solution;
- if(spec.type==='balance')return spec.solution;
- if(spec.type==='maze'){const queue=[[spec.start!]],seen=new Set([spec.start!]);while(queue.length){const path=queue.shift()!,last=path.at(-1)!;if(last===spec.end)return path;for(const n of [last-1,last+1,last-spec.width!,last+spec.width!])if(n>=0&&n<spec.width!*spec.height!&&!seen.has(n)&&!spec.blocked?.includes(n)&&Math.abs(n%spec.width!-last%spec.width!)+Math.abs(Math.floor(n/spec.width!)-Math.floor(last/spec.width!))===1){seen.add(n);queue.push([...path,n]);}}}
- throw new Error('Puzzle has no solution');
-}
+const solve=puzzleAnswer;
 function ordered(q:{answers:string[];tokens?:string[]}){let sentence=q.answers[0];const left=[...q.tokens!],out=[];while(left.length){const i=left.findIndex(t=>sentence===t||sentence.startsWith(t+' '));assert.ok(i>=0);const token=left.splice(i,1)[0];out.push(token);sentence=sentence.slice(token.length).trim();}return out;}
 test('les cinq chapitres Zelda se terminent, gardent leurs éclats et ne paient pas deux fois',()=>{
  const {f,p,act}=fixture();p.grade='cinquieme';p.test=true;p.theme='zelda';let earned=0;

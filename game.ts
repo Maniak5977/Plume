@@ -3,13 +3,14 @@ import {makeChapter,applySelections,validatePuzzle,validateConstruction,adventur
 import {performCollege,CollegeError,redactCollege} from './college';
 import type {CollegeState} from './college-types';
 import {upgradeWardrobe,ownedSkins,equippedSkin,avatarEquipment} from './wardrobe';
+import {saveFreeBoard,grantBlockLoot,ensureBlockWorld,type BlockWorld} from './block-world';
 export {makeChapter} from './adventures';
-export type Question={id:string;topic:string;title:string;prompt:string;answer:number;hint:string;visual?:{kind:string;a:number;b:number};attempts:number;help:boolean;solved:boolean;award:number};
+export type Question={id:string;topic:string;title:string;prompt:string;answer:number;hint:string;visual?:{kind:string;a:number;b:number};attempts:number;help:boolean;solved:boolean;award:number;operator?:string};
 export type MathSession={id:string;topic:string;rule:string;questions:Question[];index:number;points:number;finished:boolean;summary?:{points:number;bonus:number}};
-export type Mission={id:string;kind:'dialogue'|'choice'|'write'|'math'|'puzzle'|'build';title:string;prompt:string;target?:string;question?:Question;sequence?:string[];options?:string[];solutions?:string[];solution?:string;solved:boolean;help:boolean;attempts:number;speaker?:string;lines?:string[];selectionKey?:string;freeWrite?:boolean;context?:string;calculation?:string;puzzle?:PuzzleSpec;construction?:ConstructionSpec;draft?:any;hint?:string;cast?:string[]};
+export type Mission={id:string;kind:'dialogue'|'choice'|'write'|'math'|'puzzle'|'build';title:string;prompt:string;target?:string;question?:Question;sequence?:string[];options?:string[];solutions?:string[];solution?:string;solved:boolean;help:boolean;attempts:number;speaker?:string;lines?:string[];selectionKey?:string;freeWrite?:boolean;context?:string;calculation?:string;puzzle?:PuzzleSpec;construction?:ConstructionSpec;draft?:any;hint?:string;cast?:string[];loot?:Record<string,number>};
 export type Chapter={version?:number;theme:Theme;chapter:number;missions:Mission[];index:number;complete:boolean;selections?:Record<string,string>};
 export type PlumeTask={id:string;mode:'letter'|'word'|'phrase';level:number;target:string;solved:boolean;points:number};
-export type Profile={id:string;name:string;grade?:'ce1'|'cinquieme';college?:CollegeState;test:boolean;theme:Theme;avatar:string;skin?:string;skins?:string[];skinsByAvatar?:Record<string,string[]>;equippedSkins?:Record<string,string>;equipmentOwned?:Record<string,string[]>;equippedEquipment?:Record<string,string>;owned:string[];stars:number;earned:number;schoolStars:number;plumeDone:number;mathDone:number;letterLevel:number;wordLevel:number;phraseLevel:number;completedLetters:string[];topics:Record<string,{solved:number;help:number;errors:number}>;recent:string[];session:MathSession|null;plumeTask:PlumeTask|null;adventures:Record<string,Chapter>;adventureRewards:string[];completedChapters:string[];adventureChoices?:Partial<Record<Theme,Record<string,string>>>;houseBlocks?:Record<string,string>;history:{id:string;label:string;stars:number;at:number}[];createdAt:number};
+export type Profile={id:string;name:string;grade?:'ce1'|'cinquieme';college?:CollegeState;test:boolean;theme:Theme;avatar:string;skin?:string;skins?:string[];skinsByAvatar?:Record<string,string[]>;equippedSkins?:Record<string,string>;equipmentOwned?:Record<string,string[]>;equippedEquipment?:Record<string,string>;owned:string[];stars:number;earned:number;schoolStars:number;plumeDone:number;mathDone:number;letterLevel:number;wordLevel:number;phraseLevel:number;completedLetters:string[];topics:Record<string,{solved:number;help:number;errors:number}>;recent:string[];session:MathSession|null;plumeTask:PlumeTask|null;adventures:Record<string,Chapter>;adventureRewards:string[];completedChapters:string[];adventureChoices?:Partial<Record<Theme,Record<string,string>>>;houseBlocks?:Record<string,string>;blockWorld?:BlockWorld;history:{id:string;label:string;stars:number;at:number}[];createdAt:number};
 export type Family={version:1;profiles:Profile[];settings:{firstChapter:number;nextChapter:number;lineGap:number;adventureDifficulty?:number};handled:string[];receipts?:Record<string,Record<string,any>>};
 export class GameError extends Error {}
 export function newProfile(name:string,test=false,theme:Theme='blocks',avatar='explorer',grade:'ce1'|'cinquieme'='ce1'):Profile{return {id:crypto.randomUUID(),name:name.trim().slice(0,24)||'Mon profil',grade,test,theme,avatar,skin:'classic',skins:['classic'],skinsByAvatar:{},equippedSkins:{},equipmentOwned:{},equippedEquipment:{},owned:AVATARS.filter(a=>a.price===0).map(a=>a.id),stars:test?600:0,earned:0,schoolStars:0,plumeDone:0,mathDone:0,letterLevel:0,wordLevel:0,phraseLevel:0,completedLetters:[],topics:{},recent:[],session:null,plumeTask:null,adventures:{},adventureRewards:[],completedChapters:[],history:[],createdAt:Date.now()};}
@@ -19,7 +20,7 @@ const uid=()=>crypto.randomUUID();
 export function makeQuestion(topic:string,rule='cross',step=0,experience=0):Question{
  let a=0,b=0,answer=0,title='',prompt='',hint='',visual:Question['visual'];
  if(topic==='journey'){
-  const tracks=experience<30?['add10','sub10','complete10','add20','doubles']:['add20','numbers','complete10','around100','problems'];
+  const tracks=experience>=140?['hundreds','groups','money','twoSteps','around100']:experience<30?['add10','sub10','complete10','add20','doubles']:['add20','numbers','complete10','around100','problems'];
   topic=tracks[Math.min(tracks.length-1,Math.floor(step/2))];
  }
  if(topic==='add10'||topic==='add20'){
@@ -41,6 +42,14 @@ export function makeQuestion(topic:string,rule='cross',step=0,experience=0):Ques
    a=randint(85,99);b=randint(101-a,20);answer=a+b;hint=`Il manque ${100-a} pour arriver à 100. Décompose ${b} en ${100-a} + ${b-(100-a)}. Après 100, ajoute ${b-(100-a)}.`;
   }
   title=rule==='reach'?'Complète à 100':rule==='under'?'Reste sous 100':rule==='above'?'Après 100':'Franchis 100';prompt=rule==='reach'?`${a} + ? = 100`:`${a} + ${b} = ?`;visual={kind:'hundred',a,b};
+ } else if(topic==='groups'){
+  a=randint(2,12);b=[2,5,10][randint(0,2)];answer=a*b;title='Des groupes identiques';prompt=`${b} groupes de ${a} blocs : combien de blocs en tout ?`;hint=`Additionne ${a}, ${b} fois, ou calcule ${b} × ${a}.`;visual={kind:'groups',a,b};
+ } else if(topic==='money'){
+  a=randint(12,48);b=randint(10,39);answer=a+b;title='Le prix total';prompt=`Un outil coûte ${a} € et un sac ${b} €. Quel est le prix total en euros ?`;hint='Additionne les deux prix. Réunis les dizaines puis les unités.';visual={kind:'add',a,b};
+ } else if(topic==='hundreds'){
+  a=randint(100,260);b=randint(12,Math.min(89,300-a));answer=a+b;title='Avec les centaines';prompt=`${a} + ${b} = ?`;hint='Garde les centaines et ajoute les dizaines puis les unités.';visual={kind:'add',a,b};
+ } else if(topic==='twoSteps'){
+  a=randint(35,90);b=randint(12,38);const used=randint(14,Math.min(58,a+b));answer=a+b-used;title='Un problème en deux étapes';prompt=`Tu as ${a} blocs. Tu en reçois ${b}, puis tu en utilises ${used}. Combien restent disponibles ?`;hint=`Commence par ${a} + ${b}, puis enlève ${used}.`;visual={kind:'twoSteps',a,b};
  } else {
   a=randint(3,10);b=randint(1,7);const add=Math.random()>.5;answer=add?a+b:a-Math.min(b,a-1);b=add?b:Math.min(b,a-1);title='Une petite histoire';
   prompt=add?`Tu as ${a} cubes. Ton ami te donne ${b} cubes. Combien en as-tu maintenant ?`:`Il y a ${a} biscuits. Tu en donnes ${b}. Combien en reste-t-il ?`;
@@ -70,6 +79,7 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
   for(const [key,min,max] of [['firstChapter',20,1000],['nextChapter',20,1000],['lineGap',10,22]] as const){const v=Number(body[key]);if(Number.isFinite(v))f.settings[key]=Math.min(max,Math.max(min,Math.round(v)));}if(body.adventureDifficulty===1||body.adventureDifficulty===2)f.settings.adventureDifficulty=body.adventureDifficulty;return {};
  }
  const p=profile(f,String(body.profileId));upgradeWardrobe(p);
+ if(action==='saveBlockWorld'){try{return saveFreeBoard(p,body.site,body.board);}catch(e){throw new GameError(e instanceof Error?e.message:'Le monde n’a pas pu être sauvegardé.');}}
  if(action==='setLevel'){if(body.grade!=='ce1'&&body.grade!=='cinquieme')throw new GameError('Choisis CP–CE1 ou 5e.');p.grade=body.grade;return {};}
  if(action.startsWith('college')){try{return performCollege(f,p,body,(stars,label,id,school)=>reward(p,stars,label,id,school));}catch(e){if(e instanceof CollegeError)throw new GameError(e.message);throw e;}}
  if(p.grade==='cinquieme'&&['startMath','mathHelp','checkMath','nextMath','startPlume','checkPlume','startAdventure','adventureHelp','checkAdventure','nextAdventure','saveAdventureDraft'].includes(action))throw new GameError('Cet exercice appartient au parcours CP–CE1. Choisis une matière du campus.');
@@ -101,7 +111,7 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
  }
  if(action==='startMath'){
   if(p.session&&!p.session.finished&&!body.replace)return {resumed:true};
-  const allowed=['journey','add10','sub10','complete10','add20','numbers','doubles','around100','problems'];if(!allowed.includes(body.topic))throw new GameError('Notion inconnue.');
+  const allowed=['journey','add10','sub10','complete10','add20','numbers','doubles','around100','problems','groups','money','hundreds','twoSteps'];if(!allowed.includes(body.topic))throw new GameError('Notion inconnue.');
   p.session=makeSession(body.topic,['under','reach','cross','above'].includes(body.rule)?body.rule:'cross',p);return {};
  }
  if(action==='mathHelp'||action==='checkMath'||action==='nextMath'){
@@ -175,9 +185,9 @@ export function perform(f:Family,body:Record<string,any>):Record<string,any>{
   if(!correct){m.attempts++;return {correct:false};}
   m.solved=true;
   if((m.kind==='choice'||(m.kind==='write'&&m.freeWrite))&&m.selectionKey){ch.selections??={};ch.selections[m.selectionKey]=a;p.adventureChoices??={};p.adventureChoices[ch.theme]??={};p.adventureChoices[ch.theme]![m.selectionKey]=a;applySelections(ch);}
-  if(m.kind==='build'){m.draft=body.answer;p.houseBlocks={...(p.houseBlocks??{}),...body.answer};}
+  if(m.kind==='build'){m.draft=body.answer;if(m.construction?.site){const world=ensureBlockWorld(p);world.sites[m.construction.site]={...(world.sites[m.construction.site]??{}),...body.answer};}else{p.houseBlocks={...(p.houseBlocks??{}),...body.answer};const world=ensureBlockWorld(p);world.sites.maison={...p.houseBlocks};}}
   if(m.kind==='puzzle')m.draft=body.answer;
-  const rewardKey=`${key}:${ch.index}`,pts=p.adventureRewards.includes(rewardKey)?0:m.help||m.attempts?8:10;
+  const rewardKey=`${key}:${ch.index}`;if(m.loot)grantBlockLoot(p,rewardKey,m.loot);const pts=p.adventureRewards.includes(rewardKey)?0:m.help||m.attempts?8:10;
   if(pts){reward(p,pts,`Aventure : ${m.title}`,m.id,false);p.adventureRewards.push(rewardKey);}return {correct:true,points:pts};
  }
  throw new GameError('Cette action n’est pas disponible.');
@@ -187,7 +197,7 @@ export function publicFamily(f:Family):any{
  for(const p of out.profiles){
   if(p.college)redactCollege(p.college);
   if(p.session)for(const q of p.session.questions){delete q.answer;if(!q.help)delete q.hint;}
-  for(const ch of Object.values(p.adventures) as any[]){for(const m of ch.missions){delete m.solution;delete m.solutions;if(m.puzzle)delete m.puzzle.solution;if(m.question){delete m.question.answer;if(!m.help)delete m.question.hint;}}}
+  for(const ch of Object.values(p.adventures) as any[]){for(const m of ch.missions){delete m.solution;delete m.solutions;if(!m.help)delete m.hint;if(m.puzzle)delete m.puzzle.solution;if(m.question){delete m.question.answer;if(!m.help)delete m.question.hint;}}}
  }
  return out;
 }

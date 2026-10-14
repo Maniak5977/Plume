@@ -4,6 +4,8 @@ import type {Profile,Family} from './game';
 import type {CollegeQuestion,CollegeSession,CollegeState,CollegeAdventure,CollegeMission,BaseBoard,BaseSpec,BaseModule} from './college-types';
 import {makeZeldaCollegeAdventure} from './zelda-quest';
 import {validatePuzzle} from './adventures';
+import {adventureCurriculum,courseQuestion,parseCoursePlan} from './adventure-curriculum';
+import {ZELDA_YEAR} from './quest-year';
 export class CollegeError extends Error {}
 const uid=()=>crypto.randomUUID();
 const int=(a:number,b:number)=>Math.floor(Math.random()*(b-a+1))+a;
@@ -87,7 +89,7 @@ export function validBoard(spec:BaseSpec,value:unknown,complete=false):value is 
   while(queue.length){const current=queue.shift()!;for(const n of [current-1,current+1,current-spec.width,current+spec.width]){if(!occupied.has(n)||seen.has(n)||Math.abs(n%spec.width-current%spec.width)+Math.abs(Math.floor(n/spec.width)-Math.floor(current/spec.width))!==1)continue;seen.add(n);queue.push(n);}}
   return seen.size===occupied.size;
 }
-export function makeCollegeAdventure(chapter:number):CollegeAdventure{
+export function makeCollegeAdventure(chapter:number,p?:Profile):CollegeAdventure{
   const meta=COLLEGE_CHAPTERS[chapter];if(!meta)throw new CollegeError('Chapitre inconnu.');
   const missions:CollegeMission[]=[];
   const dialogue=(title:string,text:string[],speaker='Nora')=>missions.push({id:uid(),kind:'dialogue',title,text,speaker,solved:false,attempts:0,help:false,award:0});
@@ -110,13 +112,41 @@ export function makeCollegeAdventure(chapter:number):CollegeAdventure{
   const room=meta.icon==='zap'?'energie':meta.icon==='flask'?'labo':meta.icon==='rocket'?'hangar':meta.icon==='home'?'habitat':'radio';
   missions.push({id:uid(),kind:'build',title:`Construire le module ${meta.room}`,text:['Les ressources et les consignes sont vérifiées. Choisis les pièces, puis place-les sur le plan.','Pose exactement deux structures, trois couloirs et le module demandé. Toutes les cases occupées doivent se toucher par un côté, et l’une doit couvrir l’entrée marquée.'],spec:{width:5,height:4,entrance:10,required:{structure:2,couloir:3,[room]:1}},draft:{},solved:false,attempts:0,help:false,award:0});
   dialogue('Mission accomplie',[meta.outro,chapter<4?'Le chapitre suivant utilisera de nouvelles compétences. Entraîne-toi dans les matières pour préparer l’équipe.':'Tu peux revoir les chapitres et poursuivre tes entraînements. Les modules construits restent dans ton camp.']);
-  return {id:uid(),chapter,index:0,complete:false,missions};
+  const curriculum=adventureCurriculum(p,chapter);
+  let offset=0;for(const m of missions)if(m.question){const subject=m.question.subject;m.text=[m.question.context??`L’équipe prépare le module ${meta.room}.`];m.question=courseQuestion(curriculum,subject,chapter+offset++,missions.filter(x=>x!==m&&x.question).map(x=>x.question!));}
+  return {id:uid(),world:'oree',curriculum,chapter,index:0,complete:false,missions};
+}
+export function upgradeCollegeAdventures(p:Profile):boolean{
+ const state=p.college;if(!state)return false;let changed=false;
+ for(const old of Object.values(state.adventures)){
+  if(old.complete)continue;
+  const desired=adventureCurriculum(p,old.chapter);
+  if(old.curriculum?.version===2&&old.curriculum.revision===(state.courseRevision??0)&&JSON.stringify(old.curriculum.topics)===JSON.stringify(desired.topics)&&JSON.stringify(old.curriculum.levels)===JSON.stringify(desired.levels))continue;
+  const fresh=old.world==='zelda'?makeZeldaCollegeAdventure(old.chapter,p):makeCollegeAdventure(old.chapter,p);
+  if(fresh.missions.length!==old.missions.length)continue;
+  for(let i=old.index;i<old.missions.length;i++){
+   const before=old.missions[i];if(before.solved)continue;
+   const next=fresh.missions[i];
+   // Keep a partially completed sanctuary and replace only its unfinished locks.
+   if(before.sanctuary&&next.sanctuary)next.sanctuary=next.sanctuary.map((q,j)=>before.sanctuary![j]?.solved?before.sanctuary![j]:{...q,attempts:before.sanctuary![j]?.attempts??0,help:before.sanctuary![j]?.help??false});
+   next.attempts=before.attempts;next.help=before.help;next.award=before.award;
+   if(next.question){next.question.attempts=before.question?.attempts??before.attempts;next.question.help=before.question?.help??before.help;}
+   if(before.kind==='build'&&next.kind==='build')next.draft=before.draft;
+   old.missions[i]=next;
+  }
+  old.curriculum=fresh.curriculum;changed=true;
+ }
+ return changed;
 }
 
 type Reward=(stars:number,label:string,id:string,school:boolean)=>void;
 export function performCollege(f:Family,p:Profile,body:Record<string,any>,reward:Reward):Record<string,any>{
   if(p.grade!=='cinquieme')throw new CollegeError('Choisis un profil de niveau 5e.');
   const state=collegeState(p),action=String(body.action);
+  if(action==='collegeSetCurriculum'){
+    try{state.coursePlan=parseCoursePlan(body);}catch(e){throw new CollegeError(e instanceof Error?e.message:'Vérifie les notions choisies.');}
+    state.courseRevision=(state.courseRevision??0)+1;upgradeCollegeAdventures(p);return {saved:true};
+  }
   if(action==='collegeStart'){
     if(state.session&&!state.session.finished&&!body.replace)return {resumed:true};
     if(!SUBJECTS.some(s=>s.id===body.subject))throw new CollegeError('Choisis une matière.');
@@ -143,10 +173,10 @@ export function performCollege(f:Family,p:Profile,body:Record<string,any>,reward
     state.recent=[questionFingerprint(q),...state.recent].slice(0,180);reward(q.award,`${SUBJECTS.find(x=>x.id===q.subject)!.name} : ${COLLEGE_TOPICS.find(x=>x.id===q.topic)!.name}`,q.id,true);return {correct:true,points:q.award};
   }
   if(action==='collegeStartMission'){
-    const chapter=Number(body.chapter);if(!Number.isInteger(chapter)||chapter<0||chapter>=COLLEGE_CHAPTERS.length)throw new CollegeError('Choisis un chapitre.');
     const world=body.world==='zelda'?'zelda':'oree';
+    const chapter=Number(body.chapter),max=world==='zelda'?ZELDA_YEAR.length:COLLEGE_CHAPTERS.length;if(!Number.isInteger(chapter)||chapter<0||chapter>=max)throw new CollegeError('Choisis un chapitre.');
     if(!collegeUnlocked(f,p,chapter,world))throw new CollegeError('Entraîne-toi dans les quatre matières et termine le chapitre précédent pour ouvrir cette mission.');
-    const key=world==='zelda'?`zelda:${chapter}`:String(chapter);if(!state.adventures[key]||state.adventures[key].complete)state.adventures[key]=world==='zelda'?makeZeldaCollegeAdventure(chapter):makeCollegeAdventure(chapter);return {key};
+    upgradeCollegeAdventures(p);const key=world==='zelda'?`zelda:${chapter}`:String(chapter);if(!state.adventures[key]||state.adventures[key].complete)state.adventures[key]=world==='zelda'?makeZeldaCollegeAdventure(chapter,p):makeCollegeAdventure(chapter,p);return {key};
   }
   if(['collegeMissionCheck','collegeMissionHelp','collegeMissionNext','collegeMissionDraft'].includes(action)){
     const ch=state.adventures[String(body.key)];if(!ch)throw new CollegeError('Ouvre une mission.');if(ch.complete)return {finished:true};
@@ -158,13 +188,25 @@ export function performCollege(f:Family,p:Profile,body:Record<string,any>,reward
       else return {};
       m.draft=body.draft;return {};
     }
-    if(action==='collegeMissionHelp'){if(!m.solved){m.help=true;if(m.question)m.question.help=true;}return {hint:m.question?.hint??(m.kind==='puzzle'?'Observe chaque indice. Tu peux changer tes choix, recommencer le chemin ou vérifier les quantités avant de valider.':'Place les pièces en un seul ensemble relié à l’entrée. Compte chaque type de pièce.')};}
+    if(action==='collegeMissionHelp'){
+      const lock=m.sanctuary?.find(q=>q.id===body.lockId);if(m.kind==='sanctuary'&&!lock)throw new CollegeError('Choisis un verrou de ce sanctuaire.');
+      if(lock){if(!lock.solved)lock.help=true;return {hint:lock.hint};}
+      if(!m.solved){m.help=true;if(m.question)m.question.help=true;}return {hint:m.question?.hint??m.hint??(m.kind==='puzzle'?'Observe chaque indice. Tu peux changer tes choix, recommencer le chemin ou vérifier les quantités avant de valider.':'Place les pièces en un seul ensemble relié à l’entrée. Compte chaque type de pièce.')};
+    }
     if(action==='collegeMissionNext'){
       if(m.kind==='dialogue')m.solved=true;if(!m.solved)throw new CollegeError('Termine cette étape.');
       if(ch.index===ch.missions.length-1){ch.complete=true;if(ch.world==='zelda')state.completedStories=Array.from(new Set([...(state.completedStories??[]),`zelda:${ch.chapter}`]));else state.completedChapters=Array.from(new Set([...state.completedChapters,ch.chapter]));return {finished:true};}ch.index++;return {};
     }
-    if(m.solved)return {correct:true,points:m.award,already:true};
+    if(m.solved&&m.kind!=='sanctuary')return {correct:true,points:m.award,already:true};
     if(m.kind==='dialogue')throw new CollegeError('Continue avec le bouton de l’histoire.');
+    if(m.kind==='sanctuary'){
+      const index=m.sanctuary?.findIndex(q=>q.id===body.lockId)??-1;if(index<0)throw new CollegeError('Choisis un verrou de ce sanctuaire.');const q=m.sanctuary![index];
+      if(q.solved)return {correct:true,points:q.award,already:true};
+      if(!checkCollegeAnswer(q,body.answer)){q.attempts++;m.attempts++;return {correct:false};}
+      q.solved=true;const base=`zelda:${ch.chapter}:${ch.index}`,key=`${base}:lock:${index}`;
+      q.award=state.rewardedMissions.includes(base)||state.rewardedMissions.includes(key)?0:q.help||q.attempts?8:10;
+      if(q.award){state.rewardedMissions.push(key);reward(q.award,`Sanctuaire : verrou ${index+1}`,q.id,false);}m.award+=q.award;m.solved=m.sanctuary!.every(x=>x.solved);return {correct:true,points:q.award};
+    }
     const correct=m.kind==='build'?!!m.spec&&validBoard(m.spec,body.answer,true):m.kind==='puzzle'?!!m.puzzle&&validatePuzzle(m.puzzle,body.answer):!!m.question&&checkCollegeAnswer(m.question,body.answer);
     if(!correct){m.attempts++;if(m.question)m.question.attempts++;return {correct:false};}
     m.solved=true;if(m.question)m.question.solved=true;
@@ -181,5 +223,5 @@ export function performCollege(f:Family,p:Profile,body:Record<string,any>,reward
 export function redactCollege(state:CollegeState):void{
   function hide(q:CollegeQuestion){delete (q as any).answers;if(!q.help)delete (q as any).hint;if(!q.solved)delete (q as any).explanation;}
   if(state.session)state.session.questions.forEach(hide);
-  Object.values(state.adventures).forEach(ch=>ch.missions.forEach(m=>{if(m.question)hide(m.question);if(m.puzzle)delete m.puzzle.solution;}));
+  Object.values(state.adventures).forEach(ch=>ch.missions.forEach(m=>{if(!m.help)delete m.hint;if(m.question)hide(m.question);m.sanctuary?.forEach(hide);if(m.puzzle)delete m.puzzle.solution;}));
 }

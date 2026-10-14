@@ -4,7 +4,8 @@ import {getChatGPTUser} from '../app/chatgpt-auth';
 import {actionReceipt,rememberAction} from './action-receipts';
 import {upgradeNarrative} from './adventures';
 import {upgradeWardrobe} from './wardrobe';
-import {upgradeGerman} from './college';
+import {upgradeGerman,upgradeCollegeAdventures} from './college';
+import {upgradeBlockWorld} from './block-world';
 export class AuthenticationError extends GameError {}
 export async function authorized(req?:Request){
  const user=await getChatGPTUser();if(!user)throw new AuthenticationError('Connecte-toi au compte parent pour retrouver les profils.');
@@ -17,7 +18,7 @@ export async function readFamily(userId:string){
  let row=await env.DB.prepare('SELECT state, revision FROM families WHERE user_id = ?').bind(userId).first<{state:string;revision:number}>();
  if(!row){const f=newFamily();await env.DB.prepare('INSERT OR IGNORE INTO families (user_id, state, revision, updated_at) VALUES (?, ?, 0, ?)').bind(userId,JSON.stringify(f),Date.now()).run();row=await env.DB.prepare('SELECT state, revision FROM families WHERE user_id = ?').bind(userId).first<{state:string;revision:number}>();}
  if(!row)throw new Error('Profile unavailable');const family=JSON.parse(row.state) as Family;let changed=false;
- for(const p of family.profiles){changed=upgradeWardrobe(p)||changed;changed=upgradeGerman(p)||changed;for(const ch of Object.values(p.adventures))upgradeNarrative(ch);}
+ for(const p of family.profiles){changed=upgradeWardrobe(p)||changed;changed=upgradeGerman(p)||changed;changed=upgradeCollegeAdventures(p)||changed;changed=upgradeBlockWorld(p)||changed;for(const ch of Object.values(p.adventures))upgradeNarrative(ch);}
  if(changed){
   const write=await env.DB.prepare('UPDATE families SET state = ?, revision = revision + 1, updated_at = ? WHERE user_id = ? AND revision = ?').bind(JSON.stringify(family),Date.now(),userId,row.revision).run();
   if(write.meta.changes!==1)continue;return {family,revision:row.revision+1};
