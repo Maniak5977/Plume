@@ -85,15 +85,15 @@ const FR_VERBS:{inf:string;present:string[];imperfect:string[];future:string[];p
  {inf:'faire',present:['fais','fais','fait','faisons','faites','font'],imperfect:['faisais','faisais','faisait','faisions','faisiez','faisaient'],future:['ferai','feras','fera','ferons','ferez','feront'],past:['ai fait','as fait','a fait','avons fait','avez fait','ont fait']},
 ];
 
-export function makeCollegeQuestion(topicId:string,difficulty:CollegeDifficulty='cinquieme'):CollegeQuestion {
+export function makeCollegeQuestion(topicId:string,difficulty:CollegeDifficulty='cinquieme',phase=0):CollegeQuestion {
   if(difficulty==='revision'&&GERMAN_BEGINNER_TOPICS.includes(topicId))return germanBeginner(topicId);
   const base=difficulty==='revision';let x:Payload;
-  const a=int(3,base?10:20),b=int(2,9),c=int(2,8);
+  const a=int(3,base?10:20+Math.min(5,phase)*4),b=int(2,9),c=int(2,8);
   if(topicId==='math-priorities'){
-    const par=!base&&Math.random()<.5,n=par?(a+b)*c:a+b*c;
+    const par=!base&&(phase>1||Math.random()<.5),n=par?(a+b)*c:a+b*c;
     x=numeric(par?`(${a} + ${b}) × ${c} = ?`:`${a} + ${b} × ${c} = ?`,n,1,par?'Commence par la parenthèse.':'Effectue la multiplication avant l’addition.',par?`${a} + ${b} = ${a+b}, puis ${a+b} × ${c} = ${n}.`:`${b} × ${c} = ${b*c}, puis ${a} + ${b*c} = ${n}.`);
   }else if(topicId==='math-signed'){
-    const u=-a,v=int(-12,18);
+    const u=-a,v=int(-12-phase*2,18+phase*3);
     x=base?choice(`Quel nombre est le plus grand : ${u} ou ${-b} ?`,String(Math.max(u,-b)),[String(Math.min(u,-b)),'Ils sont toujours égaux.'],'Le plus grand est le plus à droite sur la droite graduée.',`${Math.max(u,-b)} est plus grand que ${Math.min(u,-b)}.`):numeric(`${signed(u)} + ${signed(v)} = ?`,u+v,1,'Additionner un négatif déplace vers la gauche ; un positif vers la droite.',`En partant de ${u}, on se déplace de ${Math.abs(v)} vers la ${v<0?'gauche':'droite'} : on arrive à ${u+v}.`);
     if(base&&a===b)return makeCollegeQuestion(topicId,difficulty);
   }else if(topicId==='math-fractions'){

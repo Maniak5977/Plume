@@ -12,9 +12,11 @@ export type CollegeQuestion = {
 };
 export type CollegeSession = {id:string;subject:Subject;topic:string;difficulty:CollegeDifficulty;questions:CollegeQuestion[];index:number;points:number;finished:boolean;bonus:number;contentVersion?:number;};
 export type CollegeStat = {solved:number;errors:number;help:number;skipped:number};
+export type CollegeCoursePlan={mode:'auto'|'manual';topics:Record<Subject,string[]>;englishLevel:CollegeDifficulty;germanLevel:CollegeDifficulty};
+export type AdventureCurriculum={grade:'cinquieme';version:number;revision:number;phase:number;topics:Record<Subject,string[]>;levels:Record<Subject,CollegeDifficulty>};
 export type BaseModule = 'structure'|'couloir'|'radio'|'habitat'|'energie'|'labo'|'hangar';
 export type BaseBoard = Record<string,BaseModule>;
 export type BaseSpec = {width:number;height:number;entrance:number;required:Partial<Record<BaseModule,number>>};
-export type CollegeMission = {id:string;kind:'dialogue'|'exercise'|'build'|'puzzle';title:string;text?:string[];speaker?:string;question?:CollegeQuestion;spec?:BaseSpec;puzzle?:PuzzleSpec;draft?:any;solved:boolean;attempts:number;help:boolean;award:number};
-export type CollegeAdventure = {id:string;world?:'oree'|'zelda';chapter:number;index:number;complete:boolean;missions:CollegeMission[];};
-export type CollegeState = {session:CollegeSession|null;stats:Record<string,CollegeStat>;recent:string[];completedSessions:number;adventures:Record<string,CollegeAdventure>;completedChapters:number[];completedStories?:string[];rewardedMissions:string[];base:Record<string,BaseBoard>};
+export type CollegeMission = {id:string;kind:'dialogue'|'exercise'|'build'|'puzzle'|'sanctuary';title:string;text?:string[];speaker?:string;question?:CollegeQuestion;sanctuary?:CollegeQuestion[];spec?:BaseSpec;puzzle?:PuzzleSpec;draft?:any;hint?:string;solved:boolean;attempts:number;help:boolean;award:number};
+export type CollegeAdventure = {id:string;world?:'oree'|'zelda';curriculum?:AdventureCurriculum;chapter:number;index:number;complete:boolean;missions:CollegeMission[];};
+export type CollegeState = {session:CollegeSession|null;stats:Record<string,CollegeStat>;recent:string[];completedSessions:number;adventures:Record<string,CollegeAdventure>;completedChapters:number[];completedStories?:string[];rewardedMissions:string[];base:Record<string,BaseBoard>;coursePlan?:CollegeCoursePlan;courseRevision?:number};

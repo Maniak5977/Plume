@@ -1,3 +1,4 @@
+import {BLOCK_YEAR,ZELDA_YEAR} from './quest-year';
 export type Theme = 'blocks' | 'dinos' | 'snoopy' | 'zelda';
 export const THEMES = [
  {id:'blocks' as Theme,name:'Aventure en blocs',subtitle:'Construis ton petit monde',color:'#558b64',image:'/art/voxel-scene.png'},
@@ -42,6 +43,10 @@ export const TOPICS = [
  {id:'doubles',title:'Les doubles',sub:'Deux fois la même quantité',icon:'copy',level:'Je consolide'},
  {id:'around100',title:'Autour de 100',sub:'Atteindre et franchir la centaine',icon:'mountain',level:'Je découvre'},
  {id:'problems',title:'Petits problèmes',sub:'Des histoires à résoudre',icon:'book',level:'J’explore'},
+ {id:'groups',title:'Les groupes identiques',sub:'Compter par 2, 5 et 10',icon:'copy',level:'Je découvre'},
+ {id:'money',title:'Prix et monnaie',sub:'Réunir les prix en euros',icon:'book',level:'Je consolide'},
+ {id:'hundreds',title:'Les centaines',sub:'Calculer jusqu’à 300',icon:'hash',level:'Je découvre'},
+ {id:'twoSteps',title:'Deux étapes pour trouver',sub:'Ajouter puis retirer',icon:'book',level:'Je progresse'},
 ];
 export const HUNDRED_RULES = [
  {id:'under',name:'Rester sous 100',example:'83 + 6'},
@@ -50,10 +55,10 @@ export const HUNDRED_RULES = [
  {id:'above',name:'Après 100',example:'105 + 12'},
 ];
 export const STORIES:Record<Theme,{title:string;intro:string;chapters:string[];victory:string[]}> = {
- blocks:{title:'La maison de la clairière',intro:'Le renard a besoin d’un abri pour l’hiver. Choisis les matériaux, prépare le chantier et construis sa maison, bloc après bloc.',chapters:['Un sol solide','L’atelier du bâtisseur','Les murs prennent forme','Un toit avant la pluie','Une maison à nous'],victory:['Les fondations sont posées !','L’atelier est prêt !','Les murs sont construits !','La maison est à l’abri !','Bienvenue dans ta maison !']},
+ blocks:{title:'Le monde des bâtisseurs',intro:'Une maison devient un jardin, une mine puis un village. Avec le renard, écris les plans, prépare les ressources et construis ton monde, chapitre après chapitre.',chapters:BLOCK_YEAR.map(c=>c.title),victory:BLOCK_YEAR.map((c,i)=>i<5?['Les fondations sont posées !','L’atelier est prêt !','Les murs sont construits !','La maison est à l’abri !','Bienvenue dans ta maison !'][i]:c.title+' : mission accomplie !')},
  dinos:{title:'Le grand refuge des dinos',intro:'Après le réveil du volcan, les familles sont en sécurité au lagon. Mais certains petits ont perdu leurs parents de vue. Prépare un refuge et pars à leur rencontre.',chapters:['Le refuge du lagon','La piste des fougères','Les traces de la rivière','Le pique-nique des retrouvailles','Tous ensemble au refuge'],victory:['Le refuge est prêt !','La piste est retrouvée !','Une première famille est réunie !','Trix a retrouvé son papa !','Toutes les familles sont réunies !']},
  snoopy:{title:'La grande fête du jardin',intro:'Une invitation secrète, un jardin à préparer et des amis à accueillir… Aide Snoopy et Woodstock à organiser une fête pleine de surprises.',chapters:['Une invitation secrète','Une place pour chacun','Le goûter des amis','Des couleurs dans les branches','Bienvenue à la fête !'],victory:['Les invitations sont envoyées !','Le jardin est organisé !','Le goûter est prêt !','Les décorations sont installées !','Que la fête commence !']},
- zelda:{title:'Link et les échos de la forêt',intro:'Les balises qui guidaient les voyageurs se sont éteintes. Link, Zelda et un Korogu ont besoin de tes mots, de tes calculs et de tes idées pour retrouver cinq éclats de lumière.',chapters:['L’appel de la clairière','Le pont des anciens','Le temple du miroir','La tour des vents','La lumière du royaume'],victory:['Le premier éclat brille !','Le passage est retrouvé !','Le temple s’est réveillé !','La tour répond à nouveau !','Les cinq éclats éclairent la forêt !']},
+ zelda:{title:'Link et les échos du royaume',intro:'Six régions, 36 chapitres et un réseau de balises à réveiller. Rejoins Link et Zelda : tes apprentissages, tes choix et tes énigmes font avancer une grande quête.',chapters:ZELDA_YEAR.map(c=>c.title),victory:ZELDA_YEAR.map((c,i)=>i===35?'Le royaume des découvertes s’illumine !':c.title+' : sceau retrouvé !')},
 };
 export const SKINS = [
  {id:'classic',name:'Style original',price:0,image:'/art/avatars.png',top:2,description:'Le look de départ de chaque compagnon.'},

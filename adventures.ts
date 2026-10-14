@@ -1,10 +1,12 @@
 import type {Chapter,Mission,Profile,Question} from './game';
 import type {Theme} from './catalog';
+import {validateRunes,validateWordSearch,validateGuess} from './quest-puzzles';
+import {makeCE1YearChapter} from './year-adventures';
 export const ADVENTURE_VERSION=2;
 export const adventureKey=(theme:Theme,index:number)=>`${theme}:v${ADVENTURE_VERSION}:${index}`;
 const id=()=>crypto.randomUUID();const pick=(a:number,b:number)=>Math.floor(Math.random()*(b-a+1))+a;
-export type PuzzleSpec={type:'order'|'maze'|'match'|'symmetry'|'balance'|'memory'|'packing';items?:{id:string;label:string;icon?:string;value?:number}[];width?:number;height?:number;blocked?:number[];start?:number;end?:number;given?:{cell:number;color:string}[];colors?:string[];target?:number;noun?:string;pieces?:{id:string;label:string;color:string;width:number;height:number}[];cards?:string[];pairs?:{left:string;right:string}[];labels?:Record<string,string>;solution?:any};
-export type ConstructionSpec={layer:number;width:number;depth:number;targets:string[];materials:string[];material:string;selectionKey?:string;label:string};
+export type PuzzleSpec={type:'order'|'maze'|'match'|'symmetry'|'balance'|'memory'|'packing'|'runes'|'harvest'|'wordsearch'|'riddle'|'rebus';items?:{id:string;label:string;icon?:string;value?:number}[];width?:number;height?:number;blocked?:number[];start?:number;end?:number;given?:{cell:number;color:string}[];colors?:string[];target?:number;noun?:string;pieces?:{id:string;label:string;color:string;width:number;height:number}[];cards?:string[];pairs?:{left:string;right:string}[];labels?:Record<string,string>;solution?:any;runes?:{size:number;boxWidth:number;boxHeight:number;givens:Record<string,number>};resource?:string;nodes?:{cell:number;material:string}[];letters?:string[];words?:string[];question?:string;options?:string[];rebus?:{symbol:string;label:string}[]};
+export type ConstructionSpec={layer:number;width:number;depth:number;targets:string[];materials:string[];material:string;selectionKey?:string;label:string;site?:string;free?:boolean};
 const mission=(kind:Mission['kind'],title:string,prompt:string,extra:Partial<Mission>={}):Mission=>({id:id(),kind,title,prompt,solved:false,help:false,attempts:0,...extra});
 const talk=(speaker:string,title:string,lines:string[],cast:string[]=[])=>mission('dialogue',title,lines.join('\n\n'),{speaker,lines,cast});
 const choose=(title:string,prompt:string,options:string[],solutions:string[],selectionKey:string)=>mission('choice',title,prompt,{options,solutions,selectionKey});
@@ -38,6 +40,7 @@ const walls=Array.from({length:12},(_,i)=>[1+i%4,1+Math.floor(i/4)]).filter(([x,
 const roof=Array.from({length:12},(_,i)=>`${1+i%4},${1+Math.floor(i/4)},2`);
 const garden=['0,0,0','1,0,0','3,0,0','4,0,0','5,1,0','5,2,0'];
 export function makeChapter(theme:Theme,index:number,p:Profile,level=1):Chapter{
+ if((theme==='blocks'||theme==='zelda')&&index>=5)return makeCE1YearChapter(theme,index,p,level);
  let ms:Mission[]=[];const advanced=level===2||index===4;
  if(theme==='blocks'){
   const hero='Le renard bâtisseur';
@@ -224,6 +227,10 @@ export function makeChapter(theme:Theme,index:number,p:Profile,level=1):Chapter{
 }
 export function applySelections(ch:Chapter){for(const m of ch.missions){if(m.kind==='write'&&m.selectionKey&&ch.selections?.[m.selectionKey]){m.target=ch.selections[m.selectionKey];m.prompt=m.freeWrite?'Écris le nom que tu veux donner à ta maison.':`${m.context??''} Écris « ${m.target} » dans la case.`;}if(m.construction?.selectionKey&&ch.selections?.[m.construction.selectionKey])m.construction.material=ch.selections[m.construction.selectionKey];}}
 export function validatePuzzle(spec:PuzzleSpec,answer:any):boolean{
+ if(spec.type==='runes')return validateRunes(spec,answer);
+ if(spec.type==='wordsearch')return validateWordSearch(spec,answer);
+ if(spec.type==='riddle'||spec.type==='rebus')return validateGuess(spec,answer);
+ if(spec.type==='harvest')return Array.isArray(answer)&&answer.length===spec.target&&new Set(answer).size===answer.length&&answer.every(cell=>Number.isInteger(cell)&&spec.nodes?.some(n=>n.cell===cell&&n.material===spec.resource));
  if(spec.type==='order')return Array.isArray(answer)&&JSON.stringify(answer)===JSON.stringify(spec.solution);
  if(spec.type==='maze'){if(!Array.isArray(answer)||answer.length<2||answer.length>100||answer[0]!==spec.start||answer.at(-1)!==spec.end)return false;const w=spec.width!,h=spec.height!;return answer.every((v,i)=>Number.isInteger(v)&&v>=0&&v<w*h&&!spec.blocked?.includes(v)&&(i===0||Math.abs(v%w-answer[i-1]%w)+Math.abs(Math.floor(v/w)-Math.floor(answer[i-1]/w))===1));}
  if(spec.type==='match'||spec.type==='symmetry'){if(!answer||typeof answer!=='object'||Array.isArray(answer))return false;const keys=Object.keys(spec.solution);return Object.keys(answer).length===keys.length&&keys.every(k=>answer[k]===spec.solution[k]);}
